@@ -130,5 +130,13 @@ The application will launch at `http://127.0.0.1:5000`.
     - Add `SECRET_KEY` (random string).
     - Add Email credentials.
 
+## 🚀 Deployment (Vercel)
+
+1.  **Install Vercel CLI** or connect your GitHub repo to **Vercel Dashboard**.
+2.  Vercel will detect `vercel.json` and the `api/` directory.
+3.  **Environment Variables:** 
+    - Add `DATABASE_URL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and `SECRET_KEY` in the Vercel Project Settings -> Environment Variables.
+4.  The app will be served as a Serverless Function.
+
 ## 📜 License
 This project is developed for SSN internal use.
