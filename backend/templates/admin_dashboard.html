@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🛠️ Admin Dashboard</h1>
+    <span style="font-size: 0.9rem; color: var(--text-secondary);">Welcome, Administrator</span>
+</div>
+
+<!-- Stats / Quick View -->
+<div class="grid-2" style="margin-bottom: 2rem;">
+    <div class="dashboard-stat">
+        <h3>🚨 Pending Requests</h3>
+        <p style="font-size: 2rem; font-weight: bold; color: var(--status-pending);">
+            {{ pending_bookings|length }}
+        </p>
+        <small>Requires Action</small>
+    </div>
+    <div class="dashboard-stat" style="border-left-color: var(--secondary-color);">
+        <h3>📚 Total Bookings</h3>
+        <p style="font-size: 2rem; font-weight: bold; color: var(--secondary-color);">
+            {{ all_bookings|length }}
+        </p>
+        <small>All time history</small>
+    </div>
+</div>
+
+<!-- Pending Approvals Section -->
+<div class="card">
+    <h3 style="color: var(--status-pending);">⏳ Pending Approvals</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Event Details</th>
+                    <th>Organizer</th>
+                    <th>Venue & Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in pending_bookings %}
+                <tr style="background-color: #fffaf0;">
+                    <td>
+                        {% if booking.priority == 1 %}
+                        <span class="badge" style="background: #e1f5fe; color: #0277bd;">Faculty</span>
+                        {% elif booking.priority == 2 %}
+                        <span class="badge" style="background: #f3e5f5; color: #7b1fa2;">Club</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">{{ booking.event_name }}</div>
+                        <small>{{ booking.event_type }}</small>
+                    </td>
+                    <td>
+                        <div>{{ booking.organizer_name }}</div>
+                        <small style="color: var(--text-secondary);">User: {{ booking.user.email }}</small>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ booking.hall.name }}</div>
+                        <small>
+                            {{ booking.start_ts.strftime('%b %d, %H:%M') }} - {{ booking.end_ts.strftime('%H:%M') }}
+                        </small>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="{{ url_for('admin.approve_booking', booking_id=booking.id) }}"
+                                class="btn btn-sm btn-success" title="Approve">
+                                ✓
+                            </a>
+                            <a href="{{ url_for('admin.reject_booking', booking_id=booking.id) }}"
+                                class="btn btn-sm btn-danger" title="Reject"
+                                onclick="return confirm('Are you sure you want to reject this booking?');">
+                                ✗
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        No pending requests. Great job! 🎉
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- All Bookings History Section -->
+<div class="card">
+    <h3>📜 Master Booking Log</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Event</th>
+                    <th>Organizer</th>
+                    <th>Schedule</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in all_bookings %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td>
+                        <strong>{{ booking.event_name }}</strong> <br>
+                        <small>{{ booking.event_type }}</small>
+                    </td>
+                    <td>
+                        {{ booking.organizer_name }} <br>
+                        <small style="color: #888;">{{ booking.user.name }}</small>
+                    </td>
+                    <td>
+                        {{ booking.hall.name }} <br>
+                        <small>{{ booking.start_ts.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </td>
+                    <td>
+                        <span class="badge status-{{ booking.status.lower() }}">
+                            {{ booking.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

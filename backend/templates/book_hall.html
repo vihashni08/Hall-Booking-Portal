@@ -1,0 +1,228 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📝 New Booking Request</h1>
+    <a href="{{ url_for('booking.my_bookings') }}" class="btn btn-primary">View My History</a>
+</div>
+
+<div class="grid-2">
+    <!-- Booking Form Card -->
+    <div class="card">
+        <h3>Reserve a Hall</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+            Please allow a 15-minute buffer before and after your event.
+        </p>
+
+        <form method="POST" action="{{ url_for('booking.book_hall') }}">
+            <div class="form-group">
+                <label for="hall_id">Select Venue</label>
+                <select id="hall_id" name="hall_id" required onchange="checkAvailability()">
+                    <option value="" disabled selected>-- Choose a Hall --</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}">{{ hall.name }} (Capacity: {{ hall.capacity }})</option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-secondary); display: block; margin-top: 5px;">
+                    Select the hall that best fits your audience size.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="check_date">Check Availability for Date</label>
+                <input type="date" id="check_date" onchange="checkAvailability()" class="form-control"
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div id="timeline_container"
+                style="margin: 20px 0; padding: 15px; background: #ffffff; border-radius: 8px; border: 1px solid #dee2e6; display: none;">
+                <label style="font-weight: 600; margin-bottom: 10px; display: block; color: var(--primary-color);">📅
+                    Timeline Availability</label>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 0.85rem;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span
+                            style="width: 12px; height: 12px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 2px;"></span>
+                        Free
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span
+                            style="width: 12px; height: 12px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 2px;"></span>
+                        Pending
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span
+                            style="width: 12px; height: 12px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 2px;"></span>
+                        Booked
+                    </div>
+                </div>
+
+                <div id="timeline_bar"
+                    style="position: relative; height: 50px; background: #e9ecef; border-radius: 4px; border: 1px solid #ced4da; overflow: hidden;">
+                    <!-- Time markers -->
+                    <div style="position: absolute; bottom: 0; left: 0; font-size: 10px; padding: 2px; color: #666;">
+                        00:00</div>
+                    <div
+                        style="position: absolute; bottom: 0; left: 25%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">
+                        06:00</div>
+                    <div
+                        style="position: absolute; bottom: 0; left: 50%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">
+                        12:00</div>
+                    <div
+                        style="position: absolute; bottom: 0; left: 75%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">
+                        18:00</div>
+
+                    <!-- Slots will be injected here via JS -->
+                </div>
+                <div id="availability_status_text"
+                    style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
+                </div>
+            </div>
+
+            <!-- New Fields -->
+            <div class="form-group">
+                <label for="event_name">Event Name</label>
+                <input type="text" id="event_name" name="event_name" placeholder="e.g., Annual Tech Symposium" required>
+            </div>
+
+            <div class="form-group">
+                <label for="event_type">Event Type</label>
+                <select id="event_type" name="event_type" required>
+                    <option value="" disabled selected>Select an event type...</option>
+                    <option value="Seminar">Seminar</option>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Guest Lecture">Guest Lecture</option>
+                    <option value="Club Meeting">Club Meeting</option>
+                    <option value="Conference">Conference</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="organizer_name">Organizer / Applicant Name</label>
+                <input type="text" id="organizer_name" name="organizer_name" value="{{ session.get('name') }}" required>
+                <small style="color: var(--text-secondary);">The person responsible for this booking.</small>
+            </div>
+            <!-- End New Fields -->
+
+            <div class="form-group">
+                <label for="start_ts">Start Date & Time</label>
+                <input type="datetime-local" id="start_ts" name="start_ts" required>
+            </div>
+
+            <div class="form-group">
+                <label for="end_ts">End Date & Time</label>
+                <input type="datetime-local" id="end_ts" name="end_ts" required>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary btn-block">
+                    Submit Booking Request
+                </button>
+                <div style="text-align: center; margin-top: 10px;">
+                    <small>Admins will review your request shortly.</small>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Instructions / Info Card -->
+    <div class="card" style="background-color: #f8f9fa;">
+        <h3>📌 Booking Guidelines</h3>
+        <ul style="padding-left: 20px; line-height: 1.8; color: var(--text-secondary);">
+            <li>Faculty bookings have priority over Club events.</li>
+            <li>Bookings are subject to administrative approval.</li>
+            <li>Cancellation must be done 24 hours in advance.</li>
+            <li>Ensure the hall is clean after use.</li>
+        </ul>
+
+        <div class="alert alert-info" style="margin-top: 2rem;">
+            <strong>Need assistance?</strong><br>
+            Contact the facility manager at ext. 4500.
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    // Set default date to today for the date picker
+    document.getElementById('check_date').valueAsDate = new Date();
+
+    function checkAvailability() {
+        const hallId = document.getElementById('hall_id').value;
+        const dateStr = document.getElementById('check_date').value;
+        const timelineContainer = document.getElementById('timeline_container');
+        const timelineBar = document.getElementById('timeline_bar');
+        const statusText = document.getElementById('availability_status_text');
+
+        if (!hallId || !dateStr) {
+            timelineContainer.style.display = 'none';
+            return;
+        }
+
+        timelineContainer.style.display = 'block';
+        statusText.innerHTML = 'Checking availability...';
+
+        // clear existing slots (keep markers)
+        // A better way is to rebuild the innerHTML essentially, but keeping markers is tricky if we just clear.
+        // Let's just re-add markers every time for simplicity.
+        timelineBar.innerHTML = `
+            <div style="position: absolute; bottom: 0; left: 0; font-size: 10px; padding: 2px; color: #666;">00:00</div>
+            <div style="position: absolute; bottom: 0; left: 25%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">06:00</div>
+            <div style="position: absolute; bottom: 0; left: 50%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">12:00</div>
+            <div style="position: absolute; bottom: 0; left: 75%; font-size: 10px; padding: 2px; border-left: 1px solid #ccc; color: #666;">18:00</div>
+        `;
+
+        fetch(`{{ url_for('booking.check_availability') }}?hall_id=${hallId}&date=${dateStr}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    statusText.innerHTML = 'Error checking availability.';
+                    return;
+                }
+
+                if (data.length === 0) {
+                    statusText.innerHTML = '<span style="color: green;">✅ Entire day is free!</span>';
+                } else {
+                    statusText.innerHTML = `Found ${data.length} booking(s) for this day.`;
+                }
+
+                data.forEach(event => {
+                    const start = new Date(event.start);
+                    const end = new Date(event.end);
+
+                    // Call API returns full datetime, we need to normalize to the selected day.
+                    // But for now, let's assume single day bookings mostly.
+
+                    // Simple logic: Calculate % of day (0-1440 minutes)
+                    const startMinutes = start.getHours() * 60 + start.getMinutes();
+                    const endMinutes = end.getHours() * 60 + end.getMinutes();
+
+                    const startPercent = (startMinutes / 1440) * 100;
+                    const durationPercent = ((endMinutes - startMinutes) / 1440) * 100;
+
+                    const color = event.status === 'APPROVED' ? '#f8d7da' : '#fff3cd'; // Red or Yellow
+                    const borderColor = event.status === 'APPROVED' ? '#f5c6cb' : '#ffeeba';
+
+                    const slot = document.createElement('div');
+                    slot.style.position = 'absolute';
+                    slot.style.left = `${startPercent}%`;
+                    slot.style.width = `${durationPercent}%`;
+                    slot.style.top = '5px';
+                    slot.style.bottom = '15px'; // leave space for markers
+                    slot.style.backgroundColor = color;
+                    slot.style.border = `1px solid ${borderColor}`;
+                    slot.style.borderRadius = '3px';
+                    slot.style.zIndex = '10';
+                    slot.title = `${event.title} (${event.status})`;
+
+                    timelineBar.appendChild(slot);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                statusText.innerHTML = 'Failed to load availability.';
+            });
+    }
+</script>
+{% endblock %}

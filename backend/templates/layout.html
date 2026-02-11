@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSN Hall Booking Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <span>🏫</span> SSN Hall Booking Portal
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('booking.schedule') }}">🗓️ Schedule</a>
+
+            {% if session.get('user_id') %}
+            {% if session.get('role') == 'ADMIN' %}
+            <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+            {% else %}
+            <a href="{{ url_for('booking.book_hall') }}">➕ New Booking</a>
+            <a href="{{ url_for('booking.my_bookings') }}">📂 My Bookings</a>
+            {% endif %}
+
+            <div class="user-menu">
+                <span title="Logged in as {{ session.get('name') }}">👤 {{ session.get('name') }}</span>
+                <a href="{{ url_for('auth.logout') }}" style="color: #ffcccc;">⏏ Logout</a>
+            </div>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}">🔐 Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+        &copy; {{ 2024 }} SSN Hall Booking Portal | University Internal System
+    </footer>
+
+</body>
+
+</html>
