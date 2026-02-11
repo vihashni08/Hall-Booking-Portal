@@ -15,6 +15,7 @@ with app.app_context():
     users = [
         User(name='Admin User', email='vihashni08@gmail.com', password='admin', role='ADMIN', priority=0),
         User(name='Faculty Member', email='faculty@ssn.edu.in', password='faculty', role='FACULTY', priority=1),
+        User(name='Navadeep', email='venkatanavadeep2310116@ssn.edu.in', password='hello', role='FACULTY', priority=1),
         User(name='Club Head', email='vihashni2310922@ssn.edu.in', password='hello', role='CLUB', priority=2)
     ]
     

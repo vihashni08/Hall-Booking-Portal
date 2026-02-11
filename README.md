@@ -76,7 +76,9 @@ pip install -r requirements.txt
 3.  Update the values with your actual credentials.
 
 ### 4. Initialize Database
-Run the helper script to create tables and seed initial data (Admin, Faculty, Club users + 3 Halls).
+*Note: This step is now automated for Render deployment. The app will automatically create and seed the database on its first run.*
+
+To do it manually on your local machine:
 ```bash
 cd backend
 python reset_db.py
@@ -100,16 +102,33 @@ The application will launch at `http://127.0.0.1:5000`.
 |------|-------|----------|
 | **Admin** | `vihashni08@gmail.com` | `admin` |
 | **Faculty** | `faculty@ssn.edu.in` | `faculty` |
+| **Faculty** | `venkatanavadeep2310116@ssn.edu.in` | `hello` |
 | **Club Head** | `vihashni2310922@ssn.edu.in` | `hello` |
 
 ## 🚀 Deployment (Render.com)
 
-1.  **Sign up** on [Render.com](https://render.com/).
-2.  **New Blueprint:** Click "New +" and select "Blueprint".
-3.  **Connect Repo:** Connect your GitHub repository.
-4.  **Auto-Deploy:** Render will detect `render.yaml` and automatically configure the Web Service and PostgreSQL database.
-5.  **Environment Variables:** You might need to manually set `MAIL_USERNAME` and `MAIL_PASSWORD` in the Render dashboard if they are not in `render.yaml` (for security).
+### Option 1: Blueprint (Automated)
+*Note: Render might ask for a credit card for identity verification even for free plans.*
+1.  **New Blueprint:** Select "New +" -> "Blueprint".
+2.  Connect your repo.
+3.  Render will auto-deploy using `render.yaml` (configured for Free tier).
+
+### Option 2: Manual (Control)
+1.  **Create Database:**
+    - New + -> **PostgreSQL**.
+    - Name: `ssn-hall-db`, Plan: **Free**.
+    - Copy the `Internal Database URL`.
+2.  **Create Web Service:**
+    - New + -> **Web Service**.
+    - Connect Repo.
+    - Runtime: **Python**.
+    - Build Command: `pip install -r requirements.txt`
+    - Start Command: `cd backend && gunicorn wsgi:app`
+    - Plan: **Free**.
+3.  **Environment Variables:**
+    - Add `DATABASE_URL` (paste value from step 1).
+    - Add `SECRET_KEY` (random string).
+    - Add Email credentials.
 
 ## 📜 License
 This project is developed for SSN internal use.
-"# Hall-Booking-Portal" 

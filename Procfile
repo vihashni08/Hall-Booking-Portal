@@ -1,1 +1,1 @@
-web: cd backend && gunicorn wsgi:app
+web: cd backend && python seed_data.py && gunicorn wsgi:app
