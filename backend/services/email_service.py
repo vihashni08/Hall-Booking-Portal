@@ -5,20 +5,34 @@ from flask import current_app
 mail = Mail()
 
 def send_booking_email(recipient_email, subject, html_body, text_body=None):
+    """
+    Send email with error handling to prevent app crashes.
+    If email fails, it will be logged but won't crash the application.
+    """
     try:
         msg = Message(subject, recipients=[recipient_email])
         msg.body = text_body or "Please enable HTML to view this email."
         msg.html = html_body
-        # In a real app, this would be asynchronous
-        mail.send(msg)
-        print(f"Email sent to {recipient_email}: {subject}")
+        
+        # Set a timeout to prevent hanging
+        import socket
+        original_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(10)  # 10 second timeout
+        
+        try:
+            mail.send(msg)
+            print(f"✅ Email sent successfully to {recipient_email}: {subject}")
+        finally:
+            socket.setdefaulttimeout(original_timeout)
+            
     except Exception as e:
-        print(f"Failed to send email to {recipient_email}: {e}")
-        print("--- DEBUG EMAIL CONTENT ---")
-        print(f"To: {recipient_email}")
-        print(f"Subject: {subject}")
-        print(html_body)
-        print("---------------------------")
+        # Log the error but don't crash the app
+        print(f"⚠️ EMAIL FAILED - App continues without email")
+        print(f"   Recipient: {recipient_email}")
+        print(f"   Subject: {subject}")
+        print(f"   Error: {str(e)}")
+        print(f"   Check MAIL_USERNAME and MAIL_PASSWORD environment variables")
+        # Don't re-raise - let the app continue
 
 def get_email_template(title, content):
     return f"""
